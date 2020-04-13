@@ -1,3 +1,12 @@
+# fork from https://github.com/dafi/jekyll-toc-generator/blob/master/_plugins/tocGenerator.rb
+
+# MOD 2019/1/30 kobapan
+# if you need toc, write on YAML as follows
+# toc: true
+# MOD 2020/4/13 kobapan
+# if you need second siblings, write on YAML as follows
+# toc2: true
+
 require 'nokogiri'
 
 module Jekyll
@@ -9,9 +18,8 @@ module Jekyll
     HIDE_HTML = '<span class="toctoggle">[<a id="toctogglelink" class="internal" href="#">%1</a>]</span>'
 
     def toc_generate(html)
-      # No Toc can be specified on every single page
-      # For example the index page has no table of contents
-      return html if (@context.environments.first["page"]["noToc"] || false)
+
+      return html if (! @context.environments.first["page"]["toc"]) # MOD
 
       config = @context.registers[:site].config
 
@@ -47,31 +55,35 @@ module Jekyll
 
       # Find H1 tag and all its H2 siblings until next H1
       doc.css(toc_top_tag).each do |tag|
-        # TODO This XPATH expression can greatly improved
-        ct    = tag.xpath("count(following-sibling::#{toc_top_tag})")
-        sects = tag.xpath("following-sibling::#{toc_sec_tag}[count(following-sibling::#{toc_top_tag})=#{ct}]")
-
         level_html    = ''
         inner_section = 0
 
-        sects.each do |sect|
-          inner_section += 1
-          anchor_id = [
-                        anchor_prefix, toc_level, '-', toc_section, '-',
-                        inner_section
-                      ].map(&:to_s).join ''
-
-          sect['id'] = "#{anchor_id}"
-
-          level_html += create_level_html(anchor_id,
-                                          toc_level + 1,
-                                          toc_section + inner_section,
-                                          item_number.to_s + '.' + inner_section.to_s,
-                                          sect.text,
-                                          '')
+        if(@context.environments.first["page"]["toc2"]) # MOD
+        
+          # TODO This XPATH expression can greatly improved
+          ct    = tag.xpath("count(following-sibling::#{toc_top_tag})")
+          sects = tag.xpath("following-sibling::#{toc_sec_tag}[count(following-sibling::#{toc_top_tag})=#{ct}]")
+          
+          sects.each do |sect|
+            inner_section += 1
+            anchor_id = [
+              anchor_prefix, toc_level, '-', toc_section, '-',
+              inner_section
+            ].map(&:to_s).join ''
+            
+            sect['id'] = "#{anchor_id}"
+            
+            level_html += create_level_html(anchor_id,
+                                            toc_level + 1,
+                                            toc_section + inner_section,
+                                            item_number.to_s + '.' + inner_section.to_s,
+                                            sect.text,
+                                            '')
+          end
+          
+          level_html = '<ul>' + level_html + '</ul>' if level_html.length > 0
+          
         end
-
-        level_html = '<ul>' + level_html + '</ul>' if level_html.length > 0
 
         anchor_id = anchor_prefix + toc_level.to_s + '-' + toc_section.to_s
         tag['id'] = "#{anchor_id}"
