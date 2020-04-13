@@ -49,21 +49,34 @@ Example
 The TOC must have some CSS style to appear correctly, you can find a default implementation into file `css/toc.css`
 The style is compatible with mediawiki themes
 
-# Disable generation per page
+# Front Matter options
 
-It is possible to suppress the TOC generation in specific pages, for example the index page normally doesn't have a TOC.  
 This can be done into the [Front Matter](http://jekyllrb.com/docs/frontmatter/) section used by jekyll
 
+## enable generation per page
 
-You must add the `noToc: true` directive
+You must add the `toc: 1` directive
 
     ---
     permalink: index.html
     layout: default
     title: Main Page with TOC
-    noToc: true
+    toc: 1
     ---
 
+## make toc with second depth
+
+You must add the `toc: 2` directive
+
+    ---
+    permalink: index.html
+    layout: default
+    title: Main Page with TOC
+    toc: 2
+    ---
+
+    this make h1 and h2 toc
+    
 
 # Advanced configuration
 
